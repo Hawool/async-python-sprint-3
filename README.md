@@ -24,8 +24,10 @@ GET /chat
 POST /send {Hello}
 ```
 
-####Следующие видео помогут понять как можно запустить сервер и подключиться к нему
+#### Следующие видео помогут понять как можно запустить сервер и подключиться к нему
+
 [simplescreenrecorder-2023-01-08_00.10.54 (online-video-cutter.com).mp4](..%2F..%2F..%2F..%2FDownloads%2Fsimplescreenrecorder-2023-01-08_00.10.54%20%28online-video-cutter.com%29.mp4)
+
 [simplescreenrecorder-2023-01-08_02.13.09 (online-video-cutter.com).mp4](..%2F..%2F..%2F..%2FDownloads%2Fsimplescreenrecorder-2023-01-08_02.13.09%20%28online-video-cutter.com%29.mp4)
 
 ## Описание задания
