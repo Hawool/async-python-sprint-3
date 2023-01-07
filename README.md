@@ -26,7 +26,7 @@ POST /send {Hello}
 
 #### Следующие видео помогут понять как можно запустить сервер и подключиться к нему
 
-[different_chats.mp4](different_chats.mp4)
+https://user-images.githubusercontent.com/55694523/211173143-4e7bcf12-04dc-43d5-9983-e5beae44aaf6.mp4
 
 ## Описание задания
 
