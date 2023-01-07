@@ -15,23 +15,21 @@ class Client:
         self.writer = None
         self.username = username
 
-    async def start(self):
+    async def start(self) -> None:
         logger.info(f'Start Client {self.username}')
         self.reader, self.writer = await asyncio.open_connection(self.server_host, self.server_port)
         print(f"Connected to {self.server_host}:{self.server_port}")
         self.writer.write(f"{self.username}\n".encode())
-        print('start')
         await asyncio.gather(self.listen(), self.send())
 
-    async def listen(self):
+    async def listen(self) -> None:
         while True:
             message = await self.reader.readline()
             if not message:
                 break
             message = message.decode().strip()
-            print(f"{message}")
 
-    async def send(self):
+    async def send(self) -> None:
         for i in range(5):
             message = f'message_{i}'
             await asyncio.sleep(1)
@@ -39,7 +37,7 @@ class Client:
             await self.writer.drain()
 
 
-async def main():
+async def main() -> None:
     client = Client('Bob')
     await client.start()
 
