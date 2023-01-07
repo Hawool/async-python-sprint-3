@@ -33,6 +33,7 @@ class Server:
     async def handle_client(self, client_reader, client_writer):
         username = await client_reader.readline()
         username = username.decode().strip()
+        self.clients[username] = client_writer
 
         if self.check_if_user_exist(username):
             await self.send_last_messages_to_client(client_writer)
@@ -40,7 +41,6 @@ class Server:
             message = f'New client {username}'
             print(message)
             self.messages_store.append(message)
-            self.clients[username] = client_writer
             await self.broadcast(message, username)
 
         try:
@@ -90,6 +90,7 @@ class Server:
         except Exception as e:
             print(e)
         finally:
+            self.clients[username] = None
             client_writer.close()
 
     async def broadcast(self, message, username):
