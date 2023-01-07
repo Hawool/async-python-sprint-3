@@ -1,4 +1,10 @@
 import asyncio
+import logging
+import sys
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+logger.addHandler(logging.StreamHandler(stream=sys.stdout))
 
 
 class Client:
@@ -10,6 +16,7 @@ class Client:
         self.username = username
 
     async def start(self):
+        logger.info(f'Start Client {self.username}')
         self.reader, self.writer = await asyncio.open_connection(self.server_host, self.server_port)
         print(f"Connected to {self.server_host}:{self.server_port}")
         self.writer.write(f"{self.username}\n".encode())
