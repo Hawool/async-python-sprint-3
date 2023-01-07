@@ -26,9 +26,7 @@ POST /send {Hello}
 
 #### Следующие видео помогут понять как можно запустить сервер и подключиться к нему
 
-[main_chat.mp4](..%2F..%2F..%2F..%2FDownloads%2Fmain_chat.mp4)
-
-[different_chats.mp4](..%2F..%2F..%2F..%2FDownloads%2Fdifferent_chats.mp4)
+[different_chats.mp4](different_chats.mp4)
 
 ## Описание задания
 
