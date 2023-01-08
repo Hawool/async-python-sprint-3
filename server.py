@@ -42,6 +42,13 @@ class Server:
         print(f'Listening on http://{self.host}:{self.port}')
         await self.server.serve_forever()
 
+    async def stop(self):
+        self.server.close()
+        await self.server.wait_closed()
+        # write the chat history to a file
+        with open(self.history_file, 'wb') as f:
+            pickle.dump(self.chats, f)
+
     async def handle_client(self, client_reader: StreamReader, client_writer: StreamWriter) -> None:
         username_bytes: bytes = await client_reader.readline()
         username: str = username_bytes.decode().strip()
@@ -110,7 +117,7 @@ class Server:
     def restore_server_history(self) -> None:
         try:
             with open(self.history_file, 'rb') as file:
-                self.messages_store = pickle.load(file)
+                self.chats = pickle.load(file)
         except FileNotFoundError as error:
             logger.debug(f'File for restore message was not found, {error=}')
 
