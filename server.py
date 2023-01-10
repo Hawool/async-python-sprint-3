@@ -121,7 +121,7 @@ class Server:
     async def create_chat(self, message: bytes, username: str, client_writer: StreamWriter) -> None:
         """Отправляет клиента в чат, создает его если нет, берет существующий если есть"""
         request_path = message.decode().split()[1]
-        logger.info(f'Received POST request for path: {request_path}')
+        logger.debug(f'Received request for path: {request_path}')
         chat_name: str = message.decode().split()[1]
         if chat_name in Chat.names:
             new_chat = next(filter(lambda x: x.name == chat_name, self.chats.values()), None)
@@ -141,7 +141,7 @@ class Server:
 
     async def get_chats(self, message: bytes, client_writer: StreamWriter) -> None:
         request_path = message.decode().split()[0]
-        logger.info(f'Received GET request for path: {request_path}')
+        logger.debug(f'Received request for path: {request_path}')
         chat_names = [chat.name for chat in self.chats.values()]
         message_json = json.dumps(chat_names)
         client_writer.write(message_json.encode())
@@ -149,7 +149,7 @@ class Server:
 
     async def send_to_one_client(self, message: bytes, username: str) -> None:
         request_path = message.decode().split()[1]
-        logger.info(f'Received POST request for path: {request_path}')
+        logger.debug(f'Received request for path: {request_path}')
         client_name = message.decode().split()[1]
         client_message = message.decode().split()[2]
         for user, client_writer in self.clients.items():
