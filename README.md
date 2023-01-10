@@ -37,7 +37,7 @@
 
 #### Следующее видео поможет понять как можно запустить сервер, подключиться к нему и работать с ним
 
-https://user-images.githubusercontent.com/55694523/211173143-4e7bcf12-04dc-43d5-9983-e5beae44aaf6.mp4
+https://user-images.githubusercontent.com/55694523/211656671-47c432af-4323-4b8b-8033-f065c0a1d76b.mp4
 
 ## Описание задания
 
