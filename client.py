@@ -1,24 +1,20 @@
 import asyncio
-import logging
-import sys
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-logger.addHandler(logging.StreamHandler(stream=sys.stdout))
+from config import ServerConfig
+from log_settings import logger
 
 
 class Client:
-    def __init__(self, username, server_host='127.0.0.1', server_port=8000):
-        self.server_host = server_host
-        self.server_port = server_port
+    def __init__(self, username):
+        self.config = ServerConfig()
         self.reader = None
         self.writer = None
         self.username = username
 
     async def start(self) -> None:
         logger.info(f'Start Client {self.username}')
-        self.reader, self.writer = await asyncio.open_connection(self.server_host, self.server_port)
-        print(f"Connected to {self.server_host}:{self.server_port}")
+        self.reader, self.writer = await asyncio.open_connection(self.config.HOST, self.config.PORT)
+        print(f"Connected to {self.config.HOST}:{self.config.PORT}")
         self.writer.write(f"{self.username}\n".encode())
         await asyncio.gather(self.listen(), self.send())
 
@@ -28,6 +24,7 @@ class Client:
             if not message:
                 break
             message = message.decode().strip()
+            print(f"{message}")
 
     async def send(self) -> None:
         for i in range(5):
@@ -43,4 +40,7 @@ async def main() -> None:
 
 
 if __name__ == '__main__':
-    asyncio.run(main())
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        logger.info('Client is disabled')

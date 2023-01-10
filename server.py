@@ -1,13 +1,10 @@
 import asyncio
 import json
-import logging
 import pickle
-import sys
-from asyncio import StreamReader, StreamWriter
+from asyncio import StreamReader, StreamWriter, IncompleteReadError
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-logger.addHandler(logging.StreamHandler(stream=sys.stdout))
+from config import ServerConfig
+from log_settings import logger
 
 
 class Chat:
@@ -25,21 +22,20 @@ class Chat:
 
 
 class Server:
-    def __init__(self, host: str = '127.0.0.1', port: int = 8000):
-        self.clients: dict[str, StreamWriter] = {}
+    def __init__(self):
+        self.clients = {}
         self.server = None
-        self.host = host
-        self.port = port
-        self.messages_store: list[str] = []
+        self.config = ServerConfig()
+        self.messages_store = []
         self.main_chat = Chat(name='main', messages_store=[], clients=set())
-        self.chats: dict[str, Chat] = {'main': self.main_chat}
+        self.chats = {'main': self.main_chat}
         self.history_file = 'history_server.txt'
 
         self.restore_server_history()
 
     async def listen(self):
-        self.server = await asyncio.start_server(self.handle_client, self.host, self.port)
-        print(f'Listening on http://{self.host}:{self.port}')
+        self.server = await asyncio.start_server(self.handle_client, self.config.HOST, self.config.PORT)
+        print(f'Listening on http://{self.config.HOST}:{self.config.PORT}')
         await self.server.serve_forever()
 
     async def stop(self):
@@ -48,6 +44,7 @@ class Server:
         # write the chat history to a file
         with open(self.history_file, 'wb') as f:
             pickle.dump(self.chats, f)
+        logger.info('Server stopped')
 
     async def handle_client(self, client_reader: StreamReader, client_writer: StreamWriter) -> None:
         username_bytes: bytes = await client_reader.readline()
@@ -72,17 +69,17 @@ class Server:
                 if message_bytes.decode().startswith('quit'):
                     break
 
-                if message_bytes.decode().startswith('GET /chat'):
+                if message_bytes.decode().startswith('/chats'):
                     """Метод получения списка чатов"""
                     await self.get_chats(message_bytes, client_writer)
                     continue
 
-                if message_bytes.decode().startswith('POST /chat'):
+                if message_bytes.decode().startswith('/get_chat'):
                     """Метод создания чата или переход в существующий"""
                     await self.create_chat(message_bytes, username, client_writer)
                     continue
 
-                if message_bytes.decode().startswith('POST /send'):
+                if message_bytes.decode().startswith('/send'):
                     """Метод отправки сообщения определенному клиенту"""
                     await self.send_to_one_client(message_bytes, username)
                     continue
@@ -92,8 +89,8 @@ class Server:
                 self.messages_store.append(message)
                 print(message)
                 await self.broadcast(message, username)
-        except Exception as e:
-            print(e)
+        except IncompleteReadError as error:
+            logger.error(f'Server catch IncompleteReadError: {error}')
         finally:
             self.clients[username] = None  # type: ignore
             client_writer.close()
@@ -125,7 +122,7 @@ class Server:
         """Отправляет клиента в чат, создает его если нет, берет существующий если есть"""
         request_path = message.decode().split()[1]
         logger.info(f'Received POST request for path: {request_path}')
-        chat_name: str = message.decode().split()[2]
+        chat_name: str = message.decode().split()[1]
         if chat_name in Chat.names:
             new_chat = next(filter(lambda x: x.name == chat_name, self.chats.values()), None)
         else:
@@ -143,7 +140,7 @@ class Server:
             await client_writer.drain()
 
     async def get_chats(self, message: bytes, client_writer: StreamWriter) -> None:
-        request_path = message.decode().split()[1]
+        request_path = message.decode().split()[0]
         logger.info(f'Received GET request for path: {request_path}')
         chat_names = [chat.name for chat in self.chats.values()]
         message_json = json.dumps(chat_names)
@@ -153,8 +150,8 @@ class Server:
     async def send_to_one_client(self, message: bytes, username: str) -> None:
         request_path = message.decode().split()[1]
         logger.info(f'Received POST request for path: {request_path}')
-        client_name = message.decode().split()[2]
-        client_message = message.decode().split()[3]
+        client_name = message.decode().split()[1]
+        client_message = message.decode().split()[2]
         for user, client_writer in self.clients.items():
             if client_name == user:
                 prepared_message = f'{username}: {client_message}\n'
@@ -174,4 +171,7 @@ async def main() -> None:
 
 
 if __name__ == '__main__':
-    asyncio.run(main())
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        logger.info('Server is disabled')
